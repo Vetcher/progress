@@ -6,6 +6,7 @@ import (
 	"sync"
 	"strconv"
 	"bytes"
+	"fmt"
 )
 
 var (
@@ -13,6 +14,7 @@ var (
 	RightEdge = "]"
 	Fill = "\u2588"
 	Empty = " "
+	ESC = 27
 )
 
 type Bar struct {
@@ -57,6 +59,8 @@ func ManualBar(total int, writer io.Writer, prefix string) *Bar {
 }
 
 func (bar *Bar) display_bar() {
+	fmt.Fprintf(bar.writer, "%c[%dA", ESC, 0)
+	fmt.Fprintf(bar.writer, "%c[2K\r", ESC)
 	percentage := int(float64(bar.progress) / float64(bar.total) * 100)
 	partially_fill := percentage % 10
 	full_fill := percentage / 10
@@ -72,7 +76,8 @@ func (bar *Bar) display_bar() {
 		buf.WriteString(bar.empty_bar)
 	}
 	buf.WriteString(bar.right_bar_edge)
-	buf.WriteString(strconv.Itoa(percentage) + "%")
+	buf.WriteString(" " + strconv.Itoa(percentage) + "%")
+	buf.WriteString("\n")
 	bar.writer.Write(buf.Bytes())
 }
 
